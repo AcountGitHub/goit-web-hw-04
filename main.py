@@ -18,7 +18,9 @@ SOCKET_PORT = 5000
 
 
 class HttpHandler(BaseHTTPRequestHandler):
+    """HTTP Request Handler"""
     def do_GET(self):
+        """GET request handler"""
         route = urllib.parse.urlparse(self.path)
         match route.path:
             case '/':
@@ -34,6 +36,7 @@ class HttpHandler(BaseHTTPRequestHandler):
 
 
     def do_POST(self):
+        """POST request handler"""
         size = self.headers.get('Content-Length')
         data = self.rfile.read(int(size))
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -45,6 +48,7 @@ class HttpHandler(BaseHTTPRequestHandler):
 
 
     def send_html_file(self, filename, status=200):
+        """Method send html file from http-server"""
         self.send_response(status)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
@@ -53,6 +57,7 @@ class HttpHandler(BaseHTTPRequestHandler):
 
 
     def send_static(self, filename, status=200):
+        """Method send static resources from http-server"""
         self.send_response(status)
         mime_type, *_ = mimetypes.guess_type(filename)
         if mime_type:
@@ -64,10 +69,14 @@ class HttpHandler(BaseHTTPRequestHandler):
             self.wfile.write(fd.read())
 
 def save_data_from_form(data):
+    """Save data from form to json"""
     parse_data = urllib.parse.unquote_plus(data.decode())
     try:
         parse_dict = {key: value for key, value in [el.split('=') for el in parse_data.split('&')]}
-        json_dict = {str(datetime.now()): parse_dict}
+        json_dict = {}
+        with open('storage/data.json', 'r', encoding='utf-8') as fh:
+            json_dict = json.load(fh)
+        json_dict[str(datetime.now())] = parse_dict
         with open('storage/data.json', 'w', encoding='utf-8') as file:
             json.dump(json_dict, file, ensure_ascii=False, indent=4)
     except ValueError as err:
@@ -100,6 +109,11 @@ def run_http_server(host, port):
 
 
 if __name__ == '__main__':
+    json_file = Path('storage/data.json')
+    if not json_file.exists():
+        Path('storage').mkdir(exist_ok=True)
+        with open(json_file, 'w', encoding='utf-8') as file:
+            json.dump({}, file, ensure_ascii=False, indent=4)
     logging.basicConfig(level=logging.DEBUG, format="%(threadName)s %(message)s")
 
     server = Thread(target=run_http_server, args=(HTTP_HOST, HTTP_PORT))

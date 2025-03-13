@@ -6,9 +6,7 @@ authors = [
     {name = "artemevtusenko238",email = "artemevtusenko238@gmail.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.13"
-dependencies = [
-]
+requires-python = "3.13-slim"
 
 
 [build-system]
