@@ -9,7 +9,8 @@ from pathlib import Path
 from threading import Thread
 
 
-BASE_DIR = Path()
+CSS_DIR = Path('css/')
+IMG_DIR = Path('images/')
 BUFFER_SIZE = 1024
 HTTP_PORT = 3000
 HTTP_HOST = '0.0.0.0'
@@ -24,15 +25,20 @@ class HttpHandler(BaseHTTPRequestHandler):
         route = urllib.parse.urlparse(self.path)
         match route.path:
             case '/':
-                self.send_html_file('index.html')
+                self.send_html_file('templates/index.html')
             case '/message':
-                self.send_html_file('message.html')
+                self.send_html_file('templates/message.html')
+            case '/message.html':
+                self.send_html_file('templates/message.html')
             case _:
-                file = BASE_DIR.joinpath(route.path[1:])
-                if file.exists():
-                    self.send_static(file)
+                css_file = CSS_DIR.joinpath(route.path[1:])
+                img_file = IMG_DIR.joinpath(route.path[1:])
+                if css_file.exists():
+                    self.send_static(css_file)
+                elif img_file.exists():
+                    self.send_static(img_file)
                 else:
-                    self.send_html_file('error.html', 404)
+                    self.send_html_file('templates/error.html', 404)
 
 
     def do_POST(self):
